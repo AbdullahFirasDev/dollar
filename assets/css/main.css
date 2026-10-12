@@ -1,0 +1,81 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Google Font: Cairo (primary) — weights 400/600/700/800 */
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap');
+
+html {
+  @apply antialiased scroll-smooth;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+/* Smooth number changes on the rate board */
+.num-update {
+  transition: color 0.4s ease, transform 0.4s ease;
+}
+.flash-up {
+  animation: flash-up 0.9s ease;
+}
+.flash-down {
+  animation: flash-down 0.9s ease;
+}
+@keyframes flash-up {
+  0% { color: #60CBC7; transform: scale(1.06); }
+  100% { color: inherit; transform: scale(1); }
+}
+@keyframes flash-down {
+  0% { color: #ef4444; transform: scale(1.06); }
+  100% { color: inherit; transform: scale(1); }
+}
+
+/* Live pulse dot */
+.live-dot {
+  animation: pulse-dot 1.6s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.card {
+  @apply rounded-2xl border border-slate-200 bg-surface shadow-sm dark:border-slate-800 dark:bg-slate-900;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.card:hover {
+  box-shadow: 0 8px 30px rgba(12, 111, 255, 0.10);
+}
+
+/* Touch-friendly buttons — minimum 48px hit target */
+.btn {
+  @apply inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors;
+  min-height: 48px;
+}
+.btn-primary {
+  @apply bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600;
+}
+.btn-ghost {
+  @apply text-muted hover:bg-primary-50 dark:text-slate-300 dark:hover:bg-slate-800;
+}
+.input {
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 outline-none
+         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30
+         dark:border-slate-700 dark:bg-slate-900;
+  min-height: 48px;
+}
+
+/* Mobile-first price display: no horizontal overflow, numbers stand out */
+.price-tabular {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* Very small screens: keep grids single-column and readable */
+@media (max-width: 360px) {
+  .card { border-radius: 1rem; }
+}
