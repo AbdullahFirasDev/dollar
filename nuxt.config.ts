@@ -10,7 +10,14 @@ export default defineNuxtConfig({
   },
 
   nitro: {
-    preset: 'vercel'
+    preset: 'vercel',
+    // Force-bundle @supabase/supabase-js directly into the server bundle.
+    // Without this, Rollup keeps it external ('import "@supabase/supabase-js"'
+    // in index.mjs) and the Vercel lambda crashes at runtime with
+    // ERR_MODULE_NOT_FOUND because /var/task cannot resolve the package.
+    externals: {
+      inline: ['@supabase/supabase-js'],
+    },
   },
 
   app: {
@@ -37,13 +44,13 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      supabaseUrl: '',
-      supabaseAnonKey: '',
+      supabaseUrl: 'https://rkiiutnyfulxpudpeqbt.supabase.co',
+      supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJraWl1dG55ZnVseHB1ZHBlcWJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3NDQ4NzMsImV4cCI6MjEwNzMyMDg3M30.wSlYEI0BPOM69SroJDvU2xyTd4bBztJJ9Fugi8XlRZg',
     },
     // Server-only (set via NUXT_IQWEALTH_API_KEY / NUXT_SUPABASE_SERVICE_KEY in .env)
-    iqwealthApiKey: '',                          // IQWealth / IraqSM key (iqw_...)
+    iqwealthApiKey: 'iqw_UkH3TuIDko9Tgd6P8J1bSQT29WCT35bS',                          // IQWealth / IraqSM key (iqw_...)
     iqwealthBaseUrl: 'https://iraqsm.com/api/sheet',
-    supabaseServiceKey: '',                      // service-role key: server sync upserts bypass RLS
+    supabaseServiceKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJraWl1dG55ZnVseHB1ZHBlcWJ0Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MTc0NDg3MywiZXhwIjoyMTA3MzIwODczfQ.m8x_GtY4VyFjP6OyW8AyKVc7BPFLgTKbr5oWHh2A7Dg',                      // service-role key: server sync upserts bypass RLS
   },
 
   pwa: {

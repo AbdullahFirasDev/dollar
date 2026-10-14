@@ -1,6 +1,6 @@
 import { ref, toRef, isRef } from 'vue';
 import { a as useNuxtApp, b as useRuntimeConfig } from './server.mjs';
-import { createClient } from '@supabase/supabase-js';
+import { G as createClient } from '../_/nitro.mjs';
 
 const useStateKeyPrefix = "$s";
 function useState(...args) {
