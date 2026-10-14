@@ -98,6 +98,11 @@ declare global {
   const runTask: typeof import('../../node_modules/nitropack/dist/runtime/internal/task').runTask
   const sanitizeStatusCode: typeof import('../../node_modules/h3').sanitizeStatusCode
   const sanitizeStatusMessage: typeof import('../../node_modules/h3').sanitizeStatusMessage
+  const sbGetUser: typeof import('../../server/utils/supabaseRest').sbGetUser
+  const sbPatch: typeof import('../../server/utils/supabaseRest').sbPatch
+  const sbSelect: typeof import('../../server/utils/supabaseRest').sbSelect
+  const sbSingle: typeof import('../../server/utils/supabaseRest').sbSingle
+  const sbUpsert: typeof import('../../server/utils/supabaseRest').sbUpsert
   const sealSession: typeof import('../../node_modules/h3').sealSession
   const send: typeof import('../../node_modules/h3').send
   const sendError: typeof import('../../node_modules/h3').sendError
@@ -129,7 +134,6 @@ declare global {
   const useRuntimeConfig: typeof import('../../node_modules/nitropack/dist/runtime/internal/config').useRuntimeConfig
   const useSession: typeof import('../../node_modules/h3').useSession
   const useStorage: typeof import('../../node_modules/nitropack/dist/runtime/internal/storage').useStorage
-  const useSupabaseAdmin: typeof import('../../server/utils/supabaseAdmin').useSupabaseAdmin
   const writeEarlyHints: typeof import('../../node_modules/h3').writeEarlyHints
 }
 // for type re-export
@@ -159,5 +163,5 @@ export { defineNitroErrorHandler } from 'nitropack/runtime/internal/error/utils'
 export { buildAssetsURL as __buildAssetsURL, publicAssetsURL as __publicAssetsURL } from 'C:/xampp/htdocs/dIQD/node_modules/@nuxt/nitro-server/dist/runtime/utils/paths';
 export { defineAppConfig } from 'C:/xampp/htdocs/dIQD/node_modules/@nuxt/nitro-server/dist/runtime/utils/config';
 export { parseCSV, mapUsd, fetchIQWealth } from 'C:/xampp/htdocs/dIQD/server/utils/iqwealth';
-export { useSupabaseAdmin } from 'C:/xampp/htdocs/dIQD/server/utils/supabaseAdmin';
+export { sbSelect, sbSingle, sbUpsert, sbPatch, sbGetUser } from 'C:/xampp/htdocs/dIQD/server/utils/supabaseRest';
 export { runSync } from 'C:/xampp/htdocs/dIQD/server/utils/sync';

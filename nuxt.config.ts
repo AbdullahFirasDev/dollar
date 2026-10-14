@@ -11,13 +11,6 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'vercel',
-    // Force-bundle @supabase/supabase-js directly into the server bundle.
-    // Without this, Rollup keeps it external ('import "@supabase/supabase-js"'
-    // in index.mjs) and the Vercel lambda crashes at runtime with
-    // ERR_MODULE_NOT_FOUND because /var/task cannot resolve the package.
-    externals: {
-      inline: ['@supabase/supabase-js'],
-    },
   },
 
   app: {

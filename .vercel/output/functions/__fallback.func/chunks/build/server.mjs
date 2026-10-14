@@ -1,5 +1,5 @@
 import process from 'node:process';globalThis._importMeta_=globalThis._importMeta_||{url:"file:///_entry.js",env:process.env};import { hasInjectionContext, getCurrentInstance, defineAsyncComponent, defineComponent, h, inject, computed, unref, shallowRef, provide, shallowReactive, ref, createApp, isVNode, createCommentVNode, onErrorCaptured, onServerPrefetch, createVNode, resolveDynamicComponent, reactive, effectScope, getCurrentScope, mergeProps, toRef, withCtx, Suspense, nextTick, Fragment, isReadonly, useSSRContext, isRef, isShallow, isReactive, toRaw } from 'vue';
-import { v as parseURL, i as encodePath, x as decodePath, y as hasProtocol, z as isScriptProtocol, A as joinURL, w as withQuery, B as sanitizeStatusCode, C as getContext, $ as $fetch, D as defu, E as createHooks, l as createError$1, F as executeAsync } from '../_/nitro.mjs';
+import { y as parseURL, l as encodePath, z as decodePath, A as hasProtocol, B as isScriptProtocol, C as joinURL, w as withQuery, D as sanitizeStatusCode, E as getContext, $ as $fetch, F as defu, G as createHooks, o as createError$1, H as executeAsync } from '../_/nitro.mjs';
 import { b as baseURL } from '../routes/renderer.mjs';
 import { useRoute as useRoute$1, RouterView, START_LOCATION, createMemoryHistory, createRouter } from 'vue-router';
 import { ssrRenderSuspense, ssrRenderComponent, ssrRenderVNode } from 'vue/server-renderer';
@@ -10,11 +10,6 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
-import '@supabase/functions-js';
-import '@supabase/postgrest-js';
-import '@supabase/realtime-js';
-import '@supabase/storage-js';
-import '@supabase/auth-js';
 import 'vue-bundle-renderer/runtime';
 import 'unhead/server';
 import 'devalue';
@@ -601,12 +596,12 @@ const _routes = [
     name: "admin",
     path: "/admin",
     meta: __nuxt_page_meta || {},
-    component: () => import('./admin-zdX0AkxS.mjs')
+    component: () => import('./admin-CLvXt2m3.mjs')
   },
   {
     name: "index",
     path: "/",
-    component: () => import('./index-CcTyWK-8.mjs')
+    component: () => import('./index-l8Qf6pi3.mjs')
   }
 ];
 const validate = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
@@ -924,7 +919,7 @@ const plugins = [
   pwa_icons_plugin_C24GcIKjcI2zsa8A86om0L2LZjx1chWtzYxD11T7Txg
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-C6OiTBo6.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-DBtmfKax.mjs').then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({

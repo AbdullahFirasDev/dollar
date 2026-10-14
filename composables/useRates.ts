@@ -36,7 +36,7 @@ export function useRates() {
 
   async function fetchRates() {
     try {
-      const supabase = useSupabase()
+      const supabase = await useSupabase()
       const { data, error } = await supabase
         .from('rates')
         .select('id, region, region_ar, buy_price, sell_price, updated_at')
@@ -61,9 +61,9 @@ export function useRates() {
     }
   }
 
-  function subscribe() {
+  async function subscribe() {
     if (_channel) return
-    const supabase = useSupabase()
+    const supabase = await useSupabase()
     _channel = supabase
       .channel('rates-live')
       .on(

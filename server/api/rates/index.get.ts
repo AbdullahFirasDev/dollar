@@ -7,12 +7,30 @@
  * same table directly via Supabase Realtime; this endpoint exists for
  * integrations and manual verification.
  */
-export default defineEventHandler(async () => {
-  const sb = useSupabaseAdmin()
+interface RateRow {
+  id: string
+  region: string
+  region_ar: string
+  buy_price: number
+  sell_price: number
+  updated_by: string | null
+  updated_at: string
+}
 
+interface AppSettings {
+  auto_sync: boolean
+  last_synced_at: string | null
+  last_sync_source: string | null
+  last_sync_error: string | null
+}
+
+export default defineEventHandler(async () => {
   const [rates, settings] = await Promise.all([
-    sb.from('rates').select('*').order('region'),
-    sb.from('app_settings').select('auto_sync, last_synced_at, last_sync_source, last_sync_error').eq('id', 1).single(),
+    sbSelect<RateRow>('rates', { select: '*', order: 'region' }),
+    sbSingle<AppSettings>('app_settings', {
+      select: 'auto_sync, last_synced_at, last_sync_source, last_sync_error',
+      eq: { id: 1 },
+    }),
   ])
 
   return {

@@ -6,11 +6,6 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
-import '@supabase/functions-js';
-import '@supabase/postgrest-js';
-import '@supabase/realtime-js';
-import '@supabase/storage-js';
-import '@supabase/auth-js';
 
 const ISR_URL_PARAM = "__isr_route";
 

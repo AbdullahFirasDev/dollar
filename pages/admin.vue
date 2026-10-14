@@ -116,12 +116,19 @@
 
 <script setup lang="ts">
 import type { RateRow } from '~/composables/useRates'
+import type { SupabaseClient } from '@supabase/supabase-js'
 import { REGION_LABELS } from '~/composables/useRates'
 
 type Region = RateRow['region']
 const REGIONS: Region[] = ['baghdad', 'north', 'south']
 
-const supabase = useSupabase()
+// Lazy client resolver — useSupabase() is browser-only (dynamic SDK import),
+// so every call site awaits it instead of touching it during SSR setup.
+let sbClient: SupabaseClient | null = null
+async function getSupabase(): Promise<SupabaseClient> {
+  sbClient ??= await useSupabase()
+  return sbClient
+}
 const { rates, refresh } = useRates()
 
 const user = ref<any>(null)
@@ -144,6 +151,7 @@ const syncMsg = ref('')
 const syncOk = ref(false)
 
 async function loadSettings() {
+  const supabase = await getSupabase()
   const { data } = await supabase
     .from('app_settings')
     .select('auto_sync, last_synced_at, last_sync_source, last_sync_error')
@@ -161,6 +169,7 @@ async function loadSettings() {
 }
 
 async function toggleAutoSync() {
+  const supabase = await getSupabase()
   const next = !autoSync.value
   toggling.value = true
   const { data: sessionData } = await supabase.auth.getSession()
@@ -184,6 +193,7 @@ async function toggleAutoSync() {
 }
 
 async function syncNow() {
+  const supabase = await getSupabase()
   syncing.value = true
   syncMsg.value = ''
   try {
@@ -235,6 +245,7 @@ watch(
 )
 
 onMounted(async () => {
+  const supabase = await getSupabase()
   const { data } = await supabase.auth.getSession()
   user.value = data.session?.user ?? null
   checkingSession.value = false
@@ -248,6 +259,7 @@ onMounted(async () => {
 })
 
 async function signIn() {
+  const supabase = await getSupabase()
   busy.value = true
   error.value = ''
   const { data, error: e } = await supabase.auth.signInWithPassword({
@@ -260,11 +272,13 @@ async function signIn() {
 }
 
 async function signOut() {
+  const supabase = await getSupabase()
   await supabase.auth.signOut()
   user.value = null
 }
 
 async function saveAll() {
+  const supabase = await getSupabase()
   saving.value = true
   msg.value = ''
   try {

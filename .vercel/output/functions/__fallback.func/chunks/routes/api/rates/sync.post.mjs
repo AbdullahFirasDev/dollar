@@ -1,4 +1,4 @@
-import { d as defineEventHandler, b as getQuery, c as getHeader, s as setResponseStatus, a as useSupabaseAdmin, r as runSync, e as useRuntimeConfig } from '../../../_/nitro.mjs';
+import { d as defineEventHandler, b as getQuery, c as getHeader, e as setResponseStatus, f as sbGetUser, r as runSync, h as useRuntimeConfig } from '../../../_/nitro.mjs';
 import 'node:http';
 import 'node:https';
 import 'node:events';
@@ -6,11 +6,6 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
-import '@supabase/functions-js';
-import '@supabase/postgrest-js';
-import '@supabase/realtime-js';
-import '@supabase/storage-js';
-import '@supabase/auth-js';
 
 const sync_post = defineEventHandler(async (event) => {
   var _a, _b;
@@ -23,7 +18,7 @@ const sync_post = defineEventHandler(async (event) => {
       setResponseStatus(event, 401);
       return { ok: false, error: "\u{1F512} \u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u062A\u062A\u0637\u0644\u0628 \u062A\u0633\u062C\u064A\u0644 \u062F\u062E\u0648\u0644 \u0627\u0644\u0645\u0634\u0631\u0641" };
     }
-    const { data: userData, error } = await useSupabaseAdmin().auth.getUser(auth);
+    const { data: userData, error } = await sbGetUser(auth);
     if (error || !(userData == null ? void 0 : userData.user)) {
       setResponseStatus(event, 401);
       return { ok: false, error: "\u{1F512} \u062C\u0644\u0633\u0629 \u0627\u0644\u0645\u0634\u0631\u0641 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D\u0629 \u2014 \u0633\u062C\u0651\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0645\u0646 \u062C\u062F\u064A\u062F" };

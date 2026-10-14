@@ -1,4 +1,4 @@
-import { d as defineEventHandler, a as useSupabaseAdmin, f as fetchIQWealth, m as mapUsd, h as parseCSV, r as runSync, s as setResponseStatus, e as useRuntimeConfig } from '../../_/nitro.mjs';
+import { d as defineEventHandler, i as fetchIQWealth, m as mapUsd, j as parseCSV, a as sbSingle, r as runSync, e as setResponseStatus, h as useRuntimeConfig } from '../../_/nitro.mjs';
 import 'node:http';
 import 'node:https';
 import 'node:events';
@@ -6,16 +6,10 @@ import 'node:buffer';
 import 'node:fs';
 import 'node:path';
 import 'node:crypto';
-import '@supabase/functions-js';
-import '@supabase/postgrest-js';
-import '@supabase/realtime-js';
-import '@supabase/storage-js';
-import '@supabase/auth-js';
 
 const testSync = defineEventHandler(async (event) => {
   var _a, _b, _c, _d, _e, _f, _g, _h, _i;
   const config = useRuntimeConfig();
-  const sb = useSupabaseAdmin();
   const checks = [];
   const check = (name, passed, detail) => {
     checks.push({ name, passed, detail });
@@ -67,7 +61,7 @@ const testSync = defineEventHandler(async (event) => {
   }
   let before = null;
   try {
-    const { data, error } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+    const { data, error } = await sbSingle("rates", { select: "*", eq: { region: "baghdad" } });
     if (error) throw new Error(error.message);
     before = data;
   } catch (e) {
@@ -79,7 +73,7 @@ const testSync = defineEventHandler(async (event) => {
       let readBack = null;
       let readErr = null;
       try {
-        const { data, error } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+        const { data, error } = await sbSingle("rates", { select: "*", eq: { region: "baghdad" } });
         if (error) readErr = error.message;
         else readBack = data;
       } catch (err) {
@@ -105,7 +99,10 @@ const testSync = defineEventHandler(async (event) => {
         callFailed = true;
         failMsg = String((_g = err == null ? void 0 : err.message) != null ? _g : err);
       }
-      const { data: fallbackRow, error: fbErr } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+      const { data: fallbackRow, error: fbErr } = await sbSingle(
+        "rates",
+        { select: "*", eq: { region: "baghdad" } }
+      );
       check(
         "fallback_mechanism",
         callFailed && !fbErr && !!fallbackRow && fallbackRow.buy_price > 0 && fallbackRow.sell_price > 0,

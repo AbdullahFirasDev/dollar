@@ -29,15 +29,13 @@ export async function runSync(
   config: ReturnType<typeof useRuntimeConfig>,
   opts: { force?: boolean } = {}
 ): Promise<SyncResult & { settings?: AppSettings }> {
-  const sb = useSupabaseAdmin()
   const now = new Date()
 
   // 1) Read admin settings (auto-sync vs manual override)
-  const { data: settings } = await sb
-    .from('app_settings')
-    .select('auto_sync, last_synced_at, last_sync_source, last_sync_error')
-    .eq('id', 1)
-    .single<AppSettings>()
+  const { data: settings } = await sbSingle<AppSettings>('app_settings', {
+    select: 'auto_sync, last_synced_at, last_sync_source, last_sync_error',
+    eq: { id: 1 },
+  })
 
   const auto = settings?.auto_sync ?? true
   if (!auto && !opts.force) {
@@ -58,7 +56,8 @@ export async function runSync(
     // 3) Upsert USD (Baghdad) — IQWealth reports the Baghdad market;
     //    the Erbil/Basra rows stay under admin control.
     if (!snap.usd) throw new Error('IQWealth payload contained no USD rates')
-    const { error } = await sb.from('rates').upsert(
+    const { error } = await sbUpsert(
+      'rates',
       {
         region: 'baghdad',
         region_ar: 'بغداد',
@@ -67,21 +66,23 @@ export async function runSync(
         updated_by: null,
         updated_at: now.toISOString(),
       },
-      { onConflict: 'region' }
+      'region'
     )
     if (error) throw new Error('USD upsert failed: ' + error.message)
 
     // 4) Record sync metadata
-    const { data: newSettings } = await sb
-      .from('app_settings')
-      .update({
+    const { data: newSettings } = await sbPatch<AppSettings>(
+      'app_settings',
+      {
         last_synced_at: now.toISOString(),
         last_sync_source: 'iqwealth-api',
         last_sync_error: null,
-      })
-      .eq('id', 1)
-      .select('auto_sync, last_synced_at, last_sync_source, last_sync_error')
-      .single<AppSettings>()
+      },
+      {
+        select: 'auto_sync, last_synced_at, last_sync_source, last_sync_error',
+        eq: { id: 1 },
+      }
+    )
 
     return { ok: true, source: 'api', updated: { usd: true }, settings: newSettings ?? undefined }
   } catch (e: any) {
@@ -89,11 +90,7 @@ export async function runSync(
     // as the fallback (nothing deleted), just log the error.
     const msg = e?.message ?? String(e)
     console.error('[sync] IQWealth sync failed, serving DB values:', msg)
-    await sb
-      .from('app_settings')
-      .update({ last_sync_error: msg.slice(0, 500) })
-      .eq('id', 1)
-      .then(() => {}, () => {})
+    await sbPatch('app_settings', { last_sync_error: msg.slice(0, 500) }, { eq: { id: 1 } })
     return { ok: false, source: 'db-fallback', error: msg }
   }
 }

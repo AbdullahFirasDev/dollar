@@ -588,12 +588,12 @@ const _routes = [
     name: "admin",
     path: "/admin",
     meta: __nuxt_page_meta || {},
-    component: () => import("./_nuxt/admin-zdX0AkxS.js")
+    component: () => import("./_nuxt/admin-CLvXt2m3.js")
   },
   {
     name: "index",
     path: "/",
-    component: () => import("./_nuxt/index-CcTyWK-8.js")
+    component: () => import("./_nuxt/index-l8Qf6pi3.js")
   }
 ];
 const validate = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
@@ -911,7 +911,7 @@ const plugins = [
   pwa_icons_plugin_C24GcIKjcI2zsa8A86om0L2LZjx1chWtzYxD11T7Txg
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import("./_nuxt/default-C6OiTBo6.js").then((m) => m.default || m))
+  default: defineAsyncComponent(() => import("./_nuxt/default-DBtmfKax.js").then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({

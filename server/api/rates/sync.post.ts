@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
       setResponseStatus(event, 401)
       return { ok: false, error: '🔒 المزامنة اليدوية تتطلب تسجيل دخول المشرف' }
     }
-    const { data: userData, error } = await useSupabaseAdmin().auth.getUser(auth)
+    const { data: userData, error } = await sbGetUser(auth)
     if (error || !userData?.user) {
       setResponseStatus(event, 401)
       return { ok: false, error: '🔒 جلسة المشرف غير صالحة — سجّل الدخول من جديد' }

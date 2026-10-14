@@ -33,7 +33,6 @@ interface RateRowLike {
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const sb = useSupabaseAdmin()
   const checks: CheckResult[] = []
 
   const check = (name: string, passed: boolean, detail: string) => {
@@ -107,7 +106,7 @@ export default defineEventHandler(async (event) => {
   // ── 3) Real `.upsert()` execution (needs Supabase credentials) ───────────
   let before: RateRowLike | null = null
   try {
-    const { data, error } = await sb.from('rates').select('*').eq('region', 'baghdad').single<RateRowLike>()
+    const { data, error } = await sbSingle<RateRowLike>('rates', { select: '*', eq: { region: 'baghdad' } })
     if (error) throw new Error(error.message)
     before = data
   } catch (e: any) {
@@ -120,7 +119,7 @@ export default defineEventHandler(async (event) => {
       let readBack: RateRowLike | null = null
       let readErr: string | null = null
       try {
-        const { data, error } = await sb.from('rates').select('*').eq('region', 'baghdad').single<RateRowLike>()
+        const { data, error } = await sbSingle<RateRowLike>('rates', { select: '*', eq: { region: 'baghdad' } })
         if (error) readErr = error.message
         else readBack = data
       } catch (err: any) {
@@ -162,11 +161,10 @@ export default defineEventHandler(async (event) => {
       }
 
       // While the API is down, the DB must still serve the latest stored rates.
-      const { data: fallbackRow, error: fbErr } = await sb
-        .from('rates')
-        .select('*')
-        .eq('region', 'baghdad')
-        .single<RateRowLike>()
+      const { data: fallbackRow, error: fbErr } = await sbSingle<RateRowLike>(
+        'rates',
+        { select: '*', eq: { region: 'baghdad' } }
+      )
 
       check(
         'fallback_mechanism',
