@@ -82,8 +82,6 @@
       <PwaCtaCard />
     </section>
 
-    <p class="text-center text-[11px] sm:text-xs text-muted mt-4">
-    </p>
   </div>
 </template>
 

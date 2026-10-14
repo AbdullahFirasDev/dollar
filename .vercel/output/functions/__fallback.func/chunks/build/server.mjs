@@ -602,7 +602,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import('./index-CS9umHOz.mjs')
+    component: () => import('./index-CcTyWK-8.mjs')
   }
 ];
 const validate = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
@@ -920,7 +920,7 @@ const plugins = [
   pwa_icons_plugin_C24GcIKjcI2zsa8A86om0L2LZjx1chWtzYxD11T7Txg
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import('./default-W3UdKuTq.mjs').then((m) => m.default || m))
+  default: defineAsyncComponent(() => import('./default-C6OiTBo6.mjs').then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({

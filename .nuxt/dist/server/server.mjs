@@ -593,7 +593,7 @@ const _routes = [
   {
     name: "index",
     path: "/",
-    component: () => import("./_nuxt/index-CS9umHOz.js")
+    component: () => import("./_nuxt/index-CcTyWK-8.js")
   }
 ];
 const validate = /* @__PURE__ */ defineNuxtRouteMiddleware(async (to) => {
@@ -911,7 +911,7 @@ const plugins = [
   pwa_icons_plugin_C24GcIKjcI2zsa8A86om0L2LZjx1chWtzYxD11T7Txg
 ];
 const layouts = {
-  default: defineAsyncComponent(() => import("./_nuxt/default-W3UdKuTq.js").then((m) => m.default || m))
+  default: defineAsyncComponent(() => import("./_nuxt/default-C6OiTBo6.js").then((m) => m.default || m))
 };
 const routeRulesMatcher = _routeRulesMatcher;
 const LayoutLoader = defineComponent({
