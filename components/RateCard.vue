@@ -1,40 +1,56 @@
 <template>
-  <div class="card p-4 sm:p-6 h-full">
+  <div class="card card-hover p-4 sm:p-6 h-full group" role="group" :aria-label="label.ar">
     <div class="flex items-center justify-between mb-4">
-      <div class="flex items-center gap-2 sm:gap-3">
-        <span class="text-2xl sm:text-3xl">{{ label.icon }}</span>
+      <div class="flex items-center gap-2.5">
+        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-50 text-brand-600 transition-transform duration-200 ease-in-out group-hover:scale-105">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+        </span>
         <div>
-          <h3 class="font-bold text-base sm:text-xl leading-tight text-slate-800 dark:text-slate-100">{{ label.ar }}</h3>
-          <p class="text-[11px] sm:text-xs text-muted dark:text-slate-400">{{ label.en }}</p>
+          <h3 class="font-bold text-base sm:text-lg leading-tight text-ink-strong">{{ label.ar }}</h3>
+          <p class="text-[11px] text-muted">{{ label.en }}</p>
         </div>
       </div>
       <div class="text-left shrink-0">
-        <div class="h-2 w-2 rounded-full mb-1 inline-block"
-             :class="changed ? 'bg-cyan-highlight live-dot' : 'bg-slate-300 dark:bg-slate-700'" />
-        <p class="text-[11px] text-muted dark:text-slate-500">{{ agoText() }}</p>
+        <span
+          class="block h-2 w-2 rounded-full mb-1 ml-auto transition-colors duration-200"
+          :class="changed ? 'bg-accent' : 'bg-slate-300'"
+        />
+        <p class="text-[11px] text-muted price-tabular">{{ agoText() }}</p>
       </div>
     </div>
 
-    <div class="grid grid-cols-2 gap-2.5 sm:gap-3">
-      <div class="rounded-xl bg-mint/10 border border-mint/30 p-2.5 sm:p-4">
-        <p class="text-[10px] sm:text-xs font-bold text-mint-dark dark:text-mint mb-1">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="rounded-xl bg-gain-soft p-3 sm:p-4 transition-all duration-200 ease-in-out">
+        <p class="text-[10px] sm:text-xs font-bold text-gain mb-1">
           سعر البيع للمواطن (لكل 100$)
         </p>
-        <p class="price-tabular num-update text-lg sm:text-2xl lg:text-[1.75rem] font-extrabold text-mint-dark dark:text-mint"
+        <p class="price-tabular num-update text-xl sm:text-2xl font-extrabold text-ink-strong"
            :class="dir === 'up' ? 'flash-up' : dir === 'down' ? 'flash-down' : ''">
           {{ fmt(rate?.sell_price * 100) }}
         </p>
-        <p class="text-[10px] text-muted dark:text-slate-400 mt-1">مقابل 100 دولار</p>
+        <p class="text-[10px] text-muted mt-1">
+          <span class="font-bold" :class="dir === 'up' ? 'text-gain' : dir === 'down' ? 'text-drop' : ''">
+            {{ dir === 'up' ? '▲' : dir === 'down' ? '▼' : '' }}
+          </span>
+          مقابل 100 دولار
+        </p>
       </div>
-      <div class="rounded-xl bg-primary-50 dark:bg-brand-500/10 border border-primary-100 dark:border-brand-500/30 p-2.5 sm:p-4">
-        <p class="text-[10px] sm:text-xs font-bold text-primary-700 dark:text-brand-500 mb-1">
+      <div class="rounded-xl bg-primary-50 p-3 sm:p-4 transition-all duration-200 ease-in-out">
+        <p class="text-[10px] sm:text-xs font-bold text-brand-600 mb-1">
           سعر الشراء من المواطن (لكل 100$)
         </p>
-        <p class="price-tabular num-update text-lg sm:text-2xl lg:text-[1.75rem] font-extrabold text-primary-700 dark:text-brand-500"
+        <p class="price-tabular num-update text-xl sm:text-2xl font-extrabold text-ink-strong"
            :class="dir === 'up-s' ? 'flash-up' : dir === 'down-s' ? 'flash-down' : ''">
           {{ fmt(rate?.buy_price * 100) }}
         </p>
-        <p class="text-[10px] text-muted dark:text-slate-400 mt-1">مقابل 100 دولار</p>
+        <p class="text-[10px] text-muted mt-1">
+          <span class="font-bold" :class="dir === 'up-s' ? 'text-gain' : dir === 'down-s' ? 'text-drop' : ''">
+            {{ dir === 'up-s' ? '▲' : dir === 'down-s' ? '▼' : '' }}
+          </span>
+          مقابل 100 دولار
+        </p>
       </div>
     </div>
   </div>

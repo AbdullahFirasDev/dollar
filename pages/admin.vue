@@ -1,8 +1,7 @@
 <template>
   <div class="mx-auto max-w-3xl px-4 py-8">
     <!-- ─────────── Login state ─────────── -->
-    <div v-if="!user && !checkingSession" class="card p-6 md:p-8 max-w-sm mx-auto">
-      <h1 class="font-bold text-xl mb-1"> تسجيل دخول المشرف</h1>
+    <div v-if="!user && !checkingSession" class="card p-6 md:p-8 max-w-sm mx-auto">          <h1 class="font-bold text-xl mb-1 text-ink-strong"> تسجيل دخول المشرف</h1>
       <p class="text-xs text-slate-500 mb-5">الدخول محمي — للمشرفين فقط</p>
 
       <form @submit.prevent="signIn" class="space-y-3">
@@ -11,7 +10,7 @@
         <button type="submit" class="btn btn-primary w-full" :disabled="busy">
           {{ busy ? 'جارٍ الدخول...' : 'دخول' }}
         </button>
-        <p v-if="error" class="text-red-500 text-xs text-center">{{ error }}</p>
+        <p v-if="error" class="text-drop text-xs text-center">{{ error }}</p>
       </form>
     </div>
 
@@ -19,8 +18,8 @@
     <div v-else-if="user">
       <div class="flex items-center justify-between mb-6">
         <div>
-          <h1 class="font-bold text-xl"> لوحة تحكم المشرف</h1>
-          <p class="text-xs text-slate-500">{{ user.email }}</p>
+          <h1 class="font-bold text-xl text-ink-strong"> لوحة تحكم المشرف</h1>
+          <p class="text-xs text-muted">{{ user.email }}</p>
         </div>
         <button class="btn btn-ghost text-sm" @click="signOut">خروج</button>
       </div>
@@ -29,8 +28,8 @@
       <div class="card p-4 mb-5">
         <div class="flex items-center justify-between gap-3 mb-2">
           <div>
-            <h2 class="font-bold text-sm sm:text-base">⚡ مزامنة IQWealth الآلية</h2>
-            <p class="text-[11px] text-slate-500 mt-0.5">
+            <h2 class="font-bold text-sm sm:text-base text-ink-strong">⚡ مزامنة IQWealth الآلية</h2>
+            <p class="text-[11px] text-muted mt-0.5">
               {{ autoSync ? 'النمط الآلي: يُسحب سعر الدولار (بغداد) تلقائياً من واجهة IQWealth كل 3 دقائق' : 'النمط اليدوي: لا تحديث تلقائي — التعديل من الحقول أدناه فقط' }}
             </p>
           </div>
@@ -41,7 +40,7 @@
             :aria-checked="autoSync"
             :disabled="toggling"
             class="relative inline-flex h-8 w-14 shrink-0 rounded-full transition-colors items-center"
-            :class="autoSync ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-700'"
+            :class="autoSync ? 'bg-brand-600' : 'bg-slate-300'"
             @click="toggleAutoSync"
           >
             <span class="inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform"
@@ -57,8 +56,8 @@
             {{ syncing ? 'جارٍ المزامنة...' : '🔄 مزامنة الآن' }}
           </button>
         </div>
-        <p v-if="syncMsg" class="text-xs mt-2 text-center" :class="syncOk ? 'text-mint-dark dark:text-mint' : 'text-red-500'">{{ syncMsg }}</p>
-        <p v-if="!autoSync" class="text-[11px] text-amber-600 dark:text-amber-400 mt-2">
+        <p v-if="syncMsg" class="text-xs mt-2 text-center" :class="syncOk ? 'text-gain' : 'text-drop'">{{ syncMsg }}</p>
+        <p v-if="!autoSync" class="text-[11px] text-amber-600 mt-2">
           ⚠️ النمط اليدوي مُفعَّل: بيانات API لن تُحدَّث — يتوفر زر «مزامنة الآن» لسحب القيم يدوياً وقتما تريد.
         </p>
       </div>
@@ -66,12 +65,12 @@
       <div class="grid gap-4">
         <div v-for="(row, region) in rates" :key="region" class="card p-4">
           <div class="flex items-center justify-between mb-3">
-            <h2 class="font-bold">{{ REGION_LABELS[region as Region].icon }} {{ REGION_LABELS[region as Region].ar }}</h2>
-            <span class="text-[11px] text-slate-400">آخر تحديث: {{ shortTime(row.updated_at) }}</span>
+            <h2 class="font-bold text-ink-strong">{{ REGION_LABELS[region as Region].ar }}</h2>
+            <span class="text-[11px] text-muted price-tabular">آخر تحديث: {{ shortTime(row.updated_at) }}</span>
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-[11px] text-mint-dark dark:text-mint mb-1 font-bold">
+              <label class="block text-[11px] text-gain mb-1 font-bold">
                 سعر البيع للمواطن (IQD)
               </label>
               <input
@@ -84,7 +83,7 @@
               />
             </div>
             <div>
-              <label class="block text-[11px] text-primary-700 dark:text-brand-500 mb-1 font-bold">
+              <label class="block text-[11px] text-brand-600 mb-1 font-bold">
                 سعر الشراء من المواطن (IQD)
               </label>
               <input
@@ -104,7 +103,7 @@
         <button class="btn btn-primary w-full shadow-lg min-h-[48px]" :disabled="saving" @click="saveAll">
           {{ saving ? 'جارٍ الحفظ والبث...' : ' حفظ وبث التحديث' }}
         </button>
-        <p v-if="msg" class="text-center text-sm mt-2" :class="msgOk ? 'text-mint-dark dark:text-mint' : 'text-red-500'">
+        <p v-if="msg" class="text-center text-sm mt-2" :class="msgOk ? 'text-gain' : 'text-drop'">
           {{ msg }}
         </p>
       </div>

@@ -10,72 +10,103 @@ html {
 }
 
 body {
-  @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
+  @apply bg-page text-ink;
   font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
   text-rendering: optimizeLegibility;
 }
 
-/* Smooth number changes on the rate board */
-.num-update {
-  transition: color 0.4s ease, transform 0.4s ease;
-}
-.flash-up {
-  animation: flash-up 0.9s ease;
-}
-.flash-down {
-  animation: flash-down 0.9s ease;
-}
-@keyframes flash-up {
-  0% { color: #60CBC7; transform: scale(1.06); }
-  100% { color: inherit; transform: scale(1); }
-}
-@keyframes flash-down {
-  0% { color: #ef4444; transform: scale(1.06); }
-  100% { color: inherit; transform: scale(1); }
-}
-
-/* Live pulse dot */
-.live-dot {
-  animation: pulse-dot 1.6s ease-in-out infinite;
-}
-@keyframes pulse-dot {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.35; }
-}
-
+/* ── Flat card surface: crisp border + low-blur soft shadow ── */
 .card {
-  @apply rounded-2xl border border-slate-200 bg-surface shadow-sm dark:border-slate-800 dark:bg-slate-900;
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  @apply rounded-2xl border border-slate-200/80 bg-surface shadow-sm;
+  transition: box-shadow 0.2s ease-in-out, transform 0.2s ease-in-out;
 }
-.card:hover {
-  box-shadow: 0 8px 30px rgba(12, 111, 255, 0.10);
+.card-hover:hover {
+  @apply shadow-md;
+  transform: translateY(-2px);
 }
 
-/* Touch-friendly buttons — minimum 48px hit target */
+/* ── Touch-friendly buttons — minimum 48px hit target ── */
 .btn {
-  @apply inline-flex items-center justify-center rounded-xl px-4 font-semibold transition-colors;
+  @apply inline-flex items-center justify-center rounded-xl px-4 font-semibold
+         transition-all duration-200 ease-in-out;
   min-height: 48px;
+}
+.btn:active {
+  transform: scale(0.97);
 }
 .btn-primary {
-  @apply bg-brand-600 text-white hover:bg-brand-700 dark:bg-brand-500 dark:hover:bg-brand-600;
+  @apply bg-brand-600 text-white shadow-sm hover:bg-primary-700 hover:shadow-md;
+}
+.btn-soft {
+  @apply bg-primary-50 text-primary-700 hover:bg-primary-100;
 }
 .btn-ghost {
-  @apply text-muted hover:bg-primary-50 dark:text-slate-300 dark:hover:bg-slate-800;
+  @apply text-muted hover:bg-slate-100 hover:text-ink;
 }
+.btn-outline {
+  @apply border border-slate-300 bg-surface text-ink hover:border-brand-500 hover:text-brand-600;
+}
+
 .input {
-  @apply w-full rounded-xl border border-slate-300 bg-white px-3 outline-none
-         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30
-         dark:border-slate-700 dark:bg-slate-900;
+  @apply w-full rounded-xl border border-slate-300 bg-white px-3 text-ink outline-none
+         transition-all duration-200 ease-in-out
+         focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20;
   min-height: 48px;
 }
 
-/* Mobile-first price display: no horizontal overflow, numbers stand out */
+/* ── Live pulse dot — opacity-only animation, no layout re-paint ── */
+.live-pulse {
+  position: relative;
+  display: inline-flex;
+  height: 0.625rem;
+  width: 0.625rem;
+}
+.live-pulse > span {
+  @apply absolute inline-flex h-full w-full rounded-full bg-gain;
+  opacity: 0.75;
+  animation: live-ping 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.live-pulse > span:nth-child(2) {
+  @apply relative inline-flex rounded-full;
+  animation: none;
+}
+@keyframes live-ping {
+  0% { transform: scale(1); opacity: 0.75; }
+  75%, 100% { transform: scale(2.25); opacity: 0; }
+}
+
+/* ── Subtle value-change flash: color only (GPU-cheap) ── */
+.num-update {
+  transition: color 0.4s ease;
+}
+.flash-up { animation: flash-up 0.9s ease; }
+.flash-down { animation: flash-down 0.9s ease; }
+@keyframes flash-up {
+  0% { color: #16A34A; }
+  100% { color: inherit; }
+}
+@keyframes flash-down {
+  0% { color: #DC2626; }
+  100% { color: inherit; }
+}
+
+/* ── Modal / tab fade ── */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease-in-out;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Tabular numbers: stable width when rates tick */
 .price-tabular {
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
 
-/* Very small screens: keep grids single-column and readable */
+/* Very small screens: keep cards compact and readable */
 @media (max-width: 360px) {
   .card { border-radius: 1rem; }
 }

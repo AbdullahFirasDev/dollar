@@ -16,6 +16,7 @@ type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {},
 
 export const InstallPwaButton: typeof import("../components/InstallPwaButton.vue")['default']
 export const LiveBadge: typeof import("../components/LiveBadge.vue")['default']
+export const PwaCtaCard: typeof import("../components/PwaCtaCard.vue")['default']
 export const RateCalculator: typeof import("../components/RateCalculator.vue")['default']
 export const RateCard: typeof import("../components/RateCard.vue")['default']
 export const NuxtWelcome: typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']
@@ -51,6 +52,7 @@ export const Body: typeof import("../node_modules/nuxt/dist/head/runtime/compone
 export const NuxtIsland: typeof import("../node_modules/nuxt/dist/app/components/nuxt-island")['default']
 export const LazyInstallPwaButton: LazyComponent<typeof import("../components/InstallPwaButton.vue")['default']>
 export const LazyLiveBadge: LazyComponent<typeof import("../components/LiveBadge.vue")['default']>
+export const LazyPwaCtaCard: LazyComponent<typeof import("../components/PwaCtaCard.vue")['default']>
 export const LazyRateCalculator: LazyComponent<typeof import("../components/RateCalculator.vue")['default']>
 export const LazyRateCard: LazyComponent<typeof import("../components/RateCard.vue")['default']>
 export const LazyNuxtWelcome: LazyComponent<typeof import("../node_modules/nuxt/dist/app/components/welcome.vue")['default']>

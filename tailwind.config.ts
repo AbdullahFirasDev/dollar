@@ -5,37 +5,50 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Primary palette (used by primary-* classes across components)
+        // Flat raw-color palette — no neon, no gradients
         primary: {
-          50: '#eaf2ff',
-          100: '#d6e6ff',
-          500: '#0C6FFF', // Primary Blue
+          50: '#eff8ff',
+          100: '#d9ebff',
+          200: '#b8dbff',
+          500: '#0C6FFF', // Strong flat blue — brand / active
           600: '#0C6FFF',
           700: '#0a5cd6',
           800: '#084db0',
           900: '#073f8f',
         },
         brand: {
-          50: '#eaf2ff',
-          100: '#d6e6ff',
-          500: '#0C6FFF', // Primary Blue
+          50: '#eff8ff',
+          100: '#d9ebff',
+          500: '#0C6FFF',
           600: '#0C6FFF',
           700: '#0a5cd6',
         },
-        mint: {
-          DEFAULT: '#60CBC7', // Mint / Secondary Accent
-          light: '#8ddad7',
-          dark: '#3fa39f',
+        accent: {
+          DEFAULT: '#009FE4', // Cerulean blue — secondary accents
+          light: '#4dc4f5',
+          dark: '#0080b8',
         },
-        cyan: {
-          highlight: '#009FE4', // Cyan / Highlight
+        // Flat rate indicators
+        gain: {
+          DEFAULT: '#16A34A', // flat green
+          soft: '#f0fdf4',    // pastel badge bg
+        },
+        drop: {
+          DEFAULT: '#DC2626', // flat red
+          soft: '#fef2f2',    // pastel badge bg
+        },
+        ink: {
+          DEFAULT: '#1E293B', // primary slate text
+          strong: '#0F172A',  // bold numbers / headings
         },
         muted: {
-          DEFAULT: '#606060', // Dark Neutral / Text Muted
+          DEFAULT: '#606060', // secondary muted labels
         },
-        surface: {
-          DEFAULT: '#FFFFFF', // Card / Surface Background
+        page: {
+          DEFAULT: '#F8FAFC', // base surface
+          alt: '#F1F5F9',
         },
+        surface: '#FFFFFF',     // card surface
       },
       fontFamily: {
         sans: ['Cairo', 'sans-serif'],
