@@ -10,11 +10,13 @@
     "postinstall": "nuxt prepare",
     "test:sync": "curl -sS http://localhost:3000/api/test-sync"
   },
-  "dependencies": {
+"dependencies": {
     "@supabase/supabase-js": "^2.117.3",
     "nuxt": "^3.13.0",
     "vue": "^3.5.0",
-    "vue-router": "^4.4.0"
+    "vue-router": "^4.4.0",
+    "vue-bundle-renderer": "^2.1.1",
+    "@vue/shared": "^3.5.0"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.0",
