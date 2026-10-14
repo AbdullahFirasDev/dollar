@@ -25,6 +25,44 @@
         <button class="btn btn-ghost text-sm" @click="signOut">خروج</button>
       </div>
 
+      <!-- ─────────── Auto-Sync (IQWealth API) ─────────── -->
+      <div class="card p-4 mb-5">
+        <div class="flex items-center justify-between gap-3 mb-2">
+          <div>
+            <h2 class="font-bold text-sm sm:text-base">⚡ مزامنة IQWealth الآلية</h2>
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              {{ autoSync ? 'النمط الآلي: يُسحب سعر الدولار (بغداد) تلقائياً من واجهة IQWealth كل 3 دقائق' : 'النمط اليدوي: لا تحديث تلقائي — التعديل من الحقول أدناه فقط' }}
+            </p>
+          </div>
+          <!-- Toggle switch -->
+          <button
+            type="button"
+            role="switch"
+            :aria-checked="autoSync"
+            :disabled="toggling"
+            class="relative inline-flex h-8 w-14 shrink-0 rounded-full transition-colors items-center"
+            :class="autoSync ? 'bg-brand-600' : 'bg-slate-300 dark:bg-slate-700'"
+            @click="toggleAutoSync"
+          >
+            <span class="inline-block h-6 w-6 transform rounded-full bg-white shadow transition-transform"
+                  :class="autoSync ? 'translate-x-7' : 'translate-x-1'" />
+          </button>
+        </div>
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+          <p class="text-[11px] text-slate-400">
+            <template v-if="lastSyncedAt">آخر مزامنة API: {{ shortTime(lastSyncedAt) }} — {{ lastSyncSource === 'iqwealth-api' ? 'IQWealth ✅' : 'فشلت ⚠️' }}</template>
+            <template v-else>لم تتم أي مزامنة API بعد</template>
+          </p>
+          <button class="btn btn-primary h-10 min-h-0 px-3 text-xs" :disabled="syncing" @click="syncNow">
+            {{ syncing ? 'جارٍ المزامنة...' : '🔄 مزامنة الآن' }}
+          </button>
+        </div>
+        <p v-if="syncMsg" class="text-xs mt-2 text-center" :class="syncOk ? 'text-mint-dark dark:text-mint' : 'text-red-500'">{{ syncMsg }}</p>
+        <p v-if="!autoSync" class="text-[11px] text-amber-600 dark:text-amber-400 mt-2">
+          ⚠️ النمط اليدوي مُفعَّل: بيانات API لن تُحدَّث — يتوفر زر «مزامنة الآن» لسحب القيم يدوياً وقتما تريد.
+        </p>
+      </div>
+
       <div class="grid gap-4">
         <div v-for="(row, region) in rates" :key="region" class="card p-4">
           <div class="flex items-center justify-between mb-3">
@@ -97,6 +135,86 @@ const saving = ref(false)
 const msg = ref('')
 const msgOk = ref(false)
 
+// ── Auto-Sync settings (app_settings table) ──
+const autoSync = ref(true)
+const toggling = ref(false)
+const lastSyncedAt = ref<string | null>(null)
+const lastSyncSource = ref<string | null>(null)
+const syncing = ref(false)
+const syncMsg = ref('')
+const syncOk = ref(false)
+
+async function loadSettings() {
+  const { data } = await supabase
+    .from('app_settings')
+    .select('auto_sync, last_synced_at, last_sync_source, last_sync_error')
+    .eq('id', 1)
+    .single()
+  if (data) {
+    autoSync.value = data.auto_sync
+    lastSyncedAt.value = data.last_synced_at
+    lastSyncSource.value = data.last_sync_source
+    if (data.last_sync_error) {
+      syncOk.value = false
+      syncMsg.value = '⚠️ آخر مزامنة API فشلت: ' + data.last_sync_error
+    }
+  }
+}
+
+async function toggleAutoSync() {
+  const next = !autoSync.value
+  toggling.value = true
+  const { data: sessionData } = await supabase.auth.getSession()
+  const uid = sessionData.session?.user?.id
+  const { error: e } = await supabase
+    .from('app_settings')
+    .update({ auto_sync: next, updated_by: uid })
+    .eq('id', 1)
+  toggling.value = false
+  if (e) {
+    syncOk.value = false
+    syncMsg.value = '⚠️ تعذر تغيير النمط: ' + (e.message ?? e)
+    setTimeout(() => (syncMsg.value = ''), 4000)
+    return
+  }
+  autoSync.value = next
+  syncOk.value = true
+  syncMsg.value = next ? '✅ تم تشغيل النمط الآلي (IQWealth API)' : '✅ تم التحويل إلى النمط اليدوي'
+  refresh()
+  setTimeout(() => (syncMsg.value = ''), 4000)
+}
+
+async function syncNow() {
+  syncing.value = true
+  syncMsg.value = ''
+  try {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const token = sessionData.session?.access_token
+    const res = await $fetch<any>('/api/rates/sync', {
+      method: 'POST',
+      query: { force: 'true' },
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+    if (res.ok && res.source === 'api') {
+      syncOk.value = true
+      syncMsg.value = res.updated?.usd
+        ? '✅ تم سحب سعر الدولار من IQWealth و تحديث اللوحة'
+        : '⚠️ وصل الرد من IQWealth لكنه لم يحتوي أسعار الدولار'
+    } else {
+      syncOk.value = false
+      syncMsg.value = '⚠️ ' + (res.error ?? 'تعذر الوصول إلى API — القيم المعروضة هي آخر بيانات مخزنة')
+    }
+  } catch (e: any) {
+    syncOk.value = false
+    syncMsg.value = '⚠️ ' + (e?.data?.error ?? e?.message ?? 'فشل الاتصال بخادم المزامنة')
+  } finally {
+    syncing.value = false
+    await loadSettings()
+    await refresh()
+    setTimeout(() => (syncMsg.value = ''), 5000)
+  }
+}
+
 const draft = reactive<Record<Region, { buy: number; sell: number }>>({
   baghdad: { buy: 0, sell: 0 },
   north: { buy: 0, sell: 0 },
@@ -122,8 +240,11 @@ onMounted(async () => {
   user.value = data.session?.user ?? null
   checkingSession.value = false
 
+  await loadSettings()
+
   supabase.auth.onAuthStateChange((_event, session) => {
     user.value = session?.user ?? null
+    if (session) loadSettings()
   })
 })
 

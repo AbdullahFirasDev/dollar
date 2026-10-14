@@ -11,6 +11,12 @@ import { NuxtModule, ModuleDependencyMeta } from '@nuxt/schema'
       cdnURL: string,
    },
 
+   iqwealthApiKey: string,
+
+   iqwealthBaseUrl: string,
+
+   supabaseServiceKey: string,
+
    nitro: {
       envPrefix: string,
    },

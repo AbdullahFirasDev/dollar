@@ -40,6 +40,10 @@ export default defineNuxtConfig({
       supabaseUrl: '',
       supabaseAnonKey: '',
     },
+    // Server-only (set via NUXT_IQWEALTH_API_KEY / NUXT_SUPABASE_SERVICE_KEY in .env)
+    iqwealthApiKey: '',                          // IQWealth / IraqSM key (iqw_...)
+    iqwealthBaseUrl: 'https://iraqsm.com/api/sheet',
+    supabaseServiceKey: '',                      // service-role key: server sync upserts bypass RLS
   },
 
   pwa: {

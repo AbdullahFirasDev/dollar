@@ -14,6 +14,7 @@ type HydrationStrategies = {
 type LazyComponent<T> = DefineComponent<HydrationStrategies, {}, {}, {}, {}, {}, {}, { hydrated: () => void }> & T
 
 interface _GlobalComponents {
+  InstallPwaButton: typeof import("../../components/InstallPwaButton.vue")['default']
   LiveBadge: typeof import("../../components/LiveBadge.vue")['default']
   RateCalculator: typeof import("../../components/RateCalculator.vue")['default']
   RateCard: typeof import("../../components/RateCard.vue")['default']
@@ -48,6 +49,7 @@ interface _GlobalComponents {
   Html: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Html']
   Body: typeof import("../../node_modules/nuxt/dist/head/runtime/components")['Body']
   NuxtIsland: typeof import("../../node_modules/nuxt/dist/app/components/nuxt-island")['default']
+  LazyInstallPwaButton: LazyComponent<typeof import("../../components/InstallPwaButton.vue")['default']>
   LazyLiveBadge: LazyComponent<typeof import("../../components/LiveBadge.vue")['default']>
   LazyRateCalculator: LazyComponent<typeof import("../../components/RateCalculator.vue")['default']>
   LazyRateCard: LazyComponent<typeof import("../../components/RateCard.vue")['default']>

@@ -5,6 +5,7 @@
         سعر الدولار اليوم في العراق
       </h1>
       <p class="text-muted dark:text-slate-400 text-sm sm:text-base lg:text-lg">
+        أسعار صرف الدولار مقابل الدينار العراقي — تحديث لحظي مباشر
       </p>
       <p class="mt-2 text-xs sm:text-sm text-muted dark:text-slate-500" aria-live="polite">
         آخر تحديث: <span class="font-bold text-primary-700 dark:text-cyan-highlight">{{ agoText() }}</span>
@@ -21,11 +22,16 @@
       </div>
     </section>
 
-    <section v-else class="grid gap-4 sm:gap-5 md:grid-cols-3">
-      <RateCard region="baghdad" />
-      <RateCard region="north" />
-      <RateCard region="south" />
-    </section>
+    <template v-else>
+      <section class="grid gap-4 sm:gap-5 md:grid-cols-3">
+        <RateCard region="baghdad" />
+        <RateCard region="north" />
+        <RateCard region="south" />
+      </section>
+      <p class="text-center text-[11px] sm:text-xs text-muted dark:text-slate-500 mt-3">
+        سعر بغداد يتحدث تلقائياً من واجهة IQWealth — أسعار أربيل والبصرة تبقى تحت إشراف لوحة التحكم.
+      </p>
+    </template>
 
     <section class="mt-6 sm:mt-10">
       <RateCalculator />

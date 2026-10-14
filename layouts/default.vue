@@ -29,6 +29,7 @@
           >
             <ClientOnly><span v-if="dark">☀️</span><span v-else>🌙</span></ClientOnly>
           </button>
+          
         </nav>
       </div>
     </header>
@@ -59,6 +60,7 @@
 </template>
 
 <script setup lang="ts">
+
 const dark = useState('dark', () => true)
 
 function applyTheme(v: boolean) {

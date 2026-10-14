@@ -3,7 +3,7 @@ import { Server } from 'node:http';
 import { resolve, dirname, join } from 'node:path';
 import nodeCrypto from 'node:crypto';
 import { parentPort, threadId } from 'node:worker_threads';
-import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, createError, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, getQuery as getQuery$1, getRequestWebStream, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, readBody, getResponseStatusText } from 'file://C:/xampp/htdocs/dIQD/node_modules/h3/dist/index.mjs';
+import { defineEventHandler, handleCacheHeaders, splitCookiesString, createEvent, fetchWithEvent, isEvent, eventHandler, setHeaders, createError, sendRedirect, proxyRequest, getRequestHeader, setResponseHeaders, setResponseStatus, send, getRequestHeaders, setResponseHeader, appendResponseHeader, getRequestURL, getResponseHeader, removeResponseHeader, getQuery as getQuery$1, getRequestWebStream, createApp, createRouter as createRouter$1, toNodeListener, lazyEventHandler, getResponseStatus, getRouterParam, readBody, getHeader, getResponseStatusText } from 'file://C:/xampp/htdocs/dIQD/node_modules/h3/dist/index.mjs';
 import { escapeHtml } from 'file://C:/xampp/htdocs/dIQD/node_modules/@vue/shared/dist/shared.cjs.js';
 import viteNodeEntry_mjs from 'file://C:/xampp/htdocs/dIQD/node_modules/@nuxt/vite-builder/dist/vite-node-entry.mjs';
 import { viteNodeFetch } from 'file://C:/xampp/htdocs/dIQD/node_modules/@nuxt/vite-builder/dist/vite-node.mjs';
@@ -34,6 +34,7 @@ import { SourceMapConsumer } from 'file://C:/xampp/htdocs/dIQD/node_modules/sour
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { getContext } from 'file://C:/xampp/htdocs/dIQD/node_modules/unctx/dist/index.mjs';
 import { captureRawStackTrace, parseRawStackTrace } from 'file://C:/xampp/htdocs/dIQD/node_modules/errx/dist/index.mjs';
+import { createClient } from 'file://C:/xampp/htdocs/dIQD/node_modules/@supabase/supabase-js/dist/index.mjs';
 import _wH6JrtIxmaSoA8lCPWFnE9z4lQeXW6H5z3l5aymEQw from 'file://C:/xampp/htdocs/dIQD/node_modules/@nuxt/vite-builder/dist/fix-stacktrace.mjs';
 import { promises } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -655,7 +656,10 @@ const _inlineRuntimeConfig = {
   "public": {
     "supabaseUrl": "",
     "supabaseAnonKey": ""
-  }
+  },
+  "iqwealthApiKey": "",
+  "iqwealthBaseUrl": "https://iraqsm.com/api/sheet",
+  "supabaseServiceKey": ""
 };
 const envOptions = {
   prefix: "NITRO_",
@@ -2140,8 +2144,175 @@ function onConsoleLog(callback) {
 	consola$1.wrapConsole();
 }
 
+function defineNitroPlugin(def) {
+  return def;
+}
+
+let admin = null;
+function env(name) {
+  var _a, _b;
+  return (_b = (_a = globalThis.process) == null ? void 0 : _a.env) == null ? void 0 : _b[name];
+}
+function useSupabaseAdmin() {
+  if (!admin) {
+    const config = useRuntimeConfig();
+    const url = config.public.supabaseUrl || env("SUPABASE_URL") || env("NUXT_PUBLIC_SUPABASE_URL");
+    const serviceKey = config.supabaseServiceKey || env("SUPABASE_SERVICE_ROLE_KEY") || env("SUPABASE_SERVICE_KEY");
+    if (!url || !serviceKey) {
+      throw new Error(
+        "Missing server Supabase credentials. Set NUXT_PUBLIC_SUPABASE_URL and NUXT_SUPABASE_SERVICE_KEY (service role key) in .env"
+      );
+    }
+    admin = createClient(url, serviceKey, {
+      auth: { persistSession: false, autoRefreshToken: false }
+    });
+  }
+  return admin;
+}
+
+function parseCSV(csv) {
+  const lines = csv.trim().split(/\r?\n/);
+  const out = [];
+  for (const line of lines) {
+    if (!line || line.startsWith("name,")) continue;
+    const [name, value, unit, as_of] = line.split(",");
+    const v = Number(value);
+    if (!name || !Number.isFinite(v)) continue;
+    out.push({ name: name.toLowerCase(), value: v, unit: unit != null ? unit : "", as_of: as_of != null ? as_of : "" });
+  }
+  return out;
+}
+function num(entries, name) {
+  const e = entries.find((x) => x.name === name);
+  return e && Number.isFinite(e.value) ? e.value : null;
+}
+function mapUsd(entries, fetchedAt) {
+  var _a;
+  const sell = (_a = num(entries, "usd")) != null ? _a : num(entries, "usd-sell");
+  const buy = num(entries, "usd-buy");
+  const per100 = num(entries, "usd-100");
+  const official = num(entries, "usd-official");
+  return {
+    usd: sell != null ? {
+      sell,
+      buy: buy != null ? buy : sell,
+      per100: per100 != null ? per100 : sell * 100,
+      official: official != null ? official : 0
+    } : null,
+    fetchedAt
+  };
+}
+async function fetchIQWealth(config) {
+  var _a, _b, _c, _d, _e;
+  const base = config.iqwealthBaseUrl || "https://iraqsm.com/api/sheet";
+  const url = `${base.replace(/\/$/, "")}/all`;
+  const key = config.iqwealthApiKey || ((_b = (_a = globalThis.process) == null ? void 0 : _a.env) == null ? void 0 : _b.IQWEALTH_API_KEY) || "iqw_UkH3TuIDko9Tgd6P8J1bSQT29WCT35bS";
+  const res = await $fetch.raw(url, {
+    method: "GET",
+    timeout: 1e4,
+    retry: 1,
+    headers: {
+      accept: "text/csv, application/json;q=0.9, */*;q=0.5",
+      // Licensed key: sent both ways so any of the provider's accepted
+      // header schemes works without needing a code change later.
+      ...key ? { authorization: `Bearer ${key}`, "x-api-key": key } : {}
+    }
+  });
+  const text = (_c = res._data) != null ? _c : "";
+  if (typeof text !== "string" || !text.trim()) throw new Error("IQWealth returned an empty payload");
+  let entries;
+  const trimmed = text.trim();
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    const parsed = JSON.parse(trimmed);
+    const arr = Array.isArray(parsed) ? parsed : (_e = (_d = parsed.data) != null ? _d : parsed.rates) != null ? _e : [];
+    entries = arr.map((r) => {
+      var _a2, _b2, _c2, _d2, _e2, _f;
+      return {
+        name: String((_b2 = (_a2 = r.name) != null ? _a2 : r.item) != null ? _b2 : "").toLowerCase(),
+        value: Number((_c2 = r.value) != null ? _c2 : r.price),
+        unit: String((_d2 = r.unit) != null ? _d2 : ""),
+        as_of: String((_f = (_e2 = r.as_of) != null ? _e2 : r.date) != null ? _f : "")
+      };
+    }).filter((r) => r.name && Number.isFinite(r.value));
+  } else {
+    entries = parseCSV(trimmed);
+  }
+  if (!entries.length) throw new Error("IQWealth payload had no usable rows");
+  return mapUsd(entries, (/* @__PURE__ */ new Date()).toISOString());
+}
+
+const THROTTLE_MS = 2 * 60 * 1e3;
+async function runSync(config, opts = {}) {
+  var _a, _b;
+  const sb = useSupabaseAdmin();
+  const now = /* @__PURE__ */ new Date();
+  const { data: settings } = await sb.from("app_settings").select("auto_sync, last_synced_at, last_sync_source, last_sync_error").eq("id", 1).single();
+  const auto = (_a = settings == null ? void 0 : settings.auto_sync) != null ? _a : true;
+  if (!auto && !opts.force) {
+    return { ok: true, source: "skipped", reason: "manual_override" };
+  }
+  if (!opts.force && (settings == null ? void 0 : settings.last_synced_at)) {
+    const since = now.getTime() - new Date(settings.last_synced_at).getTime();
+    if (since < THROTTLE_MS && since >= 0) {
+      return { ok: true, source: "skipped", reason: "throttled" };
+    }
+  }
+  try {
+    const snap = await fetchIQWealth(config);
+    if (!snap.usd) throw new Error("IQWealth payload contained no USD rates");
+    const { error } = await sb.from("rates").upsert(
+      {
+        region: "baghdad",
+        region_ar: "\u0628\u063A\u062F\u0627\u062F",
+        buy_price: Math.round(snap.usd.buy),
+        sell_price: Math.round(snap.usd.sell),
+        updated_by: null,
+        updated_at: now.toISOString()
+      },
+      { onConflict: "region" }
+    );
+    if (error) throw new Error("USD upsert failed: " + error.message);
+    const { data: newSettings } = await sb.from("app_settings").update({
+      last_synced_at: now.toISOString(),
+      last_sync_source: "iqwealth-api",
+      last_sync_error: null
+    }).eq("id", 1).select("auto_sync, last_synced_at, last_sync_source, last_sync_error").single();
+    return { ok: true, source: "api", updated: { usd: true }, settings: newSettings != null ? newSettings : void 0 };
+  } catch (e) {
+    const msg = (_b = e == null ? void 0 : e.message) != null ? _b : String(e);
+    console.error("[sync] IQWealth sync failed, serving DB values:", msg);
+    await sb.from("app_settings").update({ last_sync_error: msg.slice(0, 500) }).eq("id", 1).then(() => {
+    }, () => {
+    });
+    return { ok: false, source: "db-fallback", error: msg };
+  }
+}
+
+const _h_zUemniwuCO7p9orIqWXVJxIvO384BE4zZdQMC9U0M = defineNitroPlugin((nitro) => {
+  const config = useRuntimeConfig();
+  const INTERVAL_MS = 3 * 60 * 1e3;
+  async function tick() {
+    var _a;
+    try {
+      const result = await runSync(config);
+      if (result.source === "api") {
+        console.log("[auto-sync] synced from IQWealth:", result.updated);
+      }
+    } catch (e) {
+      console.error("[auto-sync] unexpected failure:", (_a = e == null ? void 0 : e.message) != null ? _a : e);
+    }
+  }
+  const boot = setTimeout(tick, 1e4);
+  const interval = setInterval(tick, INTERVAL_MS);
+  nitro.hooks.hook("close", () => {
+    clearTimeout(boot);
+    clearInterval(interval);
+  });
+});
+
 const plugins = [
   _p0lf9ZIMBNSSoHQXHplEEU8GqwQsGpzOf05AWIjMd7c,
+_h_zUemniwuCO7p9orIqWXVJxIvO384BE4zZdQMC9U0M,
 _wH6JrtIxmaSoA8lCPWFnE9z4lQeXW6H5z3l5aymEQw
 ];
 
@@ -2805,10 +2976,16 @@ async function getIslandContext(event) {
 	};
 }
 
+const _lazy_WbiAno = () => Promise.resolve().then(function () { return index_get$1; });
+const _lazy_vX4vGN = () => Promise.resolve().then(function () { return sync_post$1; });
+const _lazy_mC2Ipx = () => Promise.resolve().then(function () { return testSync$1; });
 const _lazy_ywTC_Z = () => Promise.resolve().then(function () { return renderer; });
 
 const handlers = [
   { route: '', handler: _tcYb1h, lazy: false, middleware: true, method: undefined },
+  { route: '/api/rates', handler: _lazy_WbiAno, lazy: true, middleware: false, method: "get" },
+  { route: '/api/rates/sync', handler: _lazy_vX4vGN, lazy: true, middleware: false, method: "post" },
+  { route: '/api/test-sync', handler: _lazy_mC2Ipx, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_error', handler: _lazy_ywTC_Z, lazy: true, middleware: false, method: undefined },
   { route: '/__nuxt_island/**', handler: handler$1, lazy: false, middleware: false, method: undefined },
   { route: '/**', handler: _lazy_ywTC_Z, lazy: true, middleware: false, method: undefined }
@@ -3161,6 +3338,173 @@ const styles = {};
 const styles$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
   __proto__: null,
   default: styles
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const index_get = defineEventHandler(async () => {
+  var _a, _b, _c, _d;
+  const sb = useSupabaseAdmin();
+  const [rates, settings] = await Promise.all([
+    sb.from("rates").select("*").order("region"),
+    sb.from("app_settings").select("auto_sync, last_synced_at, last_sync_source, last_sync_error").eq("id", 1).single()
+  ]);
+  return {
+    rates: (_a = rates.data) != null ? _a : [],
+    settings: (_b = settings.data) != null ? _b : null,
+    errors: [(_c = rates.error) == null ? void 0 : _c.message, (_d = settings.error) == null ? void 0 : _d.message].filter(Boolean)
+  };
+});
+
+const index_get$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: index_get
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const sync_post = defineEventHandler(async (event) => {
+  var _a, _b;
+  const config = useRuntimeConfig();
+  const query = getQuery$1(event);
+  const force = query.force === "true";
+  if (force) {
+    const auth = (_b = (_a = getHeader(event, "authorization")) == null ? void 0 : _a.replace(/^Bearer\s+/i, "")) != null ? _b : "";
+    if (!auth) {
+      setResponseStatus(event, 401);
+      return { ok: false, error: "\u{1F512} \u0627\u0644\u0645\u0632\u0627\u0645\u0646\u0629 \u0627\u0644\u064A\u062F\u0648\u064A\u0629 \u062A\u062A\u0637\u0644\u0628 \u062A\u0633\u062C\u064A\u0644 \u062F\u062E\u0648\u0644 \u0627\u0644\u0645\u0634\u0631\u0641" };
+    }
+    const { data: userData, error } = await useSupabaseAdmin().auth.getUser(auth);
+    if (error || !(userData == null ? void 0 : userData.user)) {
+      setResponseStatus(event, 401);
+      return { ok: false, error: "\u{1F512} \u062C\u0644\u0633\u0629 \u0627\u0644\u0645\u0634\u0631\u0641 \u063A\u064A\u0631 \u0635\u0627\u0644\u062D\u0629 \u2014 \u0633\u062C\u0651\u0644 \u0627\u0644\u062F\u062E\u0648\u0644 \u0645\u0646 \u062C\u062F\u064A\u062F" };
+    }
+  }
+  const result = await runSync(config, { force });
+  if (!result.ok) {
+    setResponseStatus(event, 502);
+  }
+  return result;
+});
+
+const sync_post$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: sync_post
+}, Symbol.toStringTag, { value: 'Module' }));
+
+const testSync = defineEventHandler(async (event) => {
+  var _a, _b, _c, _d, _e, _f, _g, _h, _i;
+  const config = useRuntimeConfig();
+  const sb = useSupabaseAdmin();
+  const checks = [];
+  const check = (name, passed, detail) => {
+    checks.push({ name, passed, detail });
+    return { name, passed, detail };
+  };
+  let snapshot = null;
+  try {
+    snapshot = await fetchIQWealth(config);
+    const usd = snapshot.usd;
+    check(
+      "iqwealth_connection",
+      !!usd && usd.sell > 0 && usd.buy > 0,
+      usd ? `fetched USD block: sell=${usd.sell} buy=${usd.buy} per100=${usd.per100} official=${usd.official}` : "fetched payload but the USD block was empty"
+    );
+  } catch (e) {
+    check("iqwealth_connection", false, "fetch failed: " + ((_a = e == null ? void 0 : e.message) != null ? _a : String(e)));
+  }
+  const FIXTURE = [
+    "name,value,unit,as_of",
+    "usd,1662,IQD,2026-10-14",
+    "usd-buy,1657,IQD,2026-10-14",
+    "usd-sell,1662,IQD,2026-10-14",
+    "usd-100,166200,IQD,2026-10-14",
+    "usd-official,1510,IQD,2026-10-14",
+    "gold21,705904,IQD,2026-10-14",
+    // present in payload, must be ignored
+    "eur,1860.27,IQD,2026-10-14",
+    // present in payload, must be ignored
+    "try,33.66,IQD,2026-10-14"
+    // present in payload, must be ignored
+  ].join("\n");
+  try {
+    const mapped = mapUsd(parseCSV(FIXTURE), (/* @__PURE__ */ new Date()).toISOString());
+    const usd = mapped.usd;
+    const rowShape = usd ? {
+      region: "baghdad",
+      region_ar: "\u0628\u063A\u062F\u0627\u062F",
+      buy_price: Math.round(usd.buy),
+      sell_price: Math.round(usd.sell)
+    } : null;
+    const ok = !!rowShape && (usd == null ? void 0 : usd.sell) === 1662 && (usd == null ? void 0 : usd.buy) === 1657 && (usd == null ? void 0 : usd.per100) === 166200 && (usd == null ? void 0 : usd.official) === 1510 && rowShape.buy_price === 1657 && rowShape.sell_price === 1662 && Number.isInteger(rowShape.buy_price) && Number.isInteger(rowShape.sell_price);
+    check(
+      "schema_mapping",
+      ok,
+      ok ? `fixture mapped to rates row: ${JSON.stringify(rowShape)} (gold/currency rows ignored)` : `unexpected mapping: ${JSON.stringify(mapped)}`
+    );
+  } catch (e) {
+    check("schema_mapping", false, "mapping threw: " + ((_b = e == null ? void 0 : e.message) != null ? _b : String(e)));
+  }
+  let before = null;
+  try {
+    const { data, error } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+    if (error) throw new Error(error.message);
+    before = data;
+  } catch (e) {
+    check("upsert_execution", false, "could not read the baghdad row first: " + ((_c = e == null ? void 0 : e.message) != null ? _c : String(e)));
+  }
+  if (before) {
+    try {
+      const result = await runSync(config, { force: true });
+      let readBack = null;
+      let readErr = null;
+      try {
+        const { data, error } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+        if (error) readErr = error.message;
+        else readBack = data;
+      } catch (err) {
+        readErr = (_d = err == null ? void 0 : err.message) != null ? _d : String(err);
+      }
+      const succeeded = result.ok && result.source === "api" && ((_e = result.updated) == null ? void 0 : _e.usd) === true && !readErr && !!readBack && !!readBack.buy_price && !!readBack.sell_price;
+      check(
+        "upsert_execution",
+        succeeded,
+        succeeded ? `upsert ran clean (no constraint errors); read back sell=${readBack.sell_price} buy=${readBack.buy_price} at ${readBack.updated_at}` : `runSync=${JSON.stringify(result)} readErr=${readErr != null ? readErr : "none"}`
+      );
+    } catch (e) {
+      check("upsert_execution", false, "upsert threw: " + ((_f = e == null ? void 0 : e.message) != null ? _f : String(e)));
+    }
+    try {
+      const brokenConfig = { ...config, iqwealthBaseUrl: "https://127.0.0.1:9/api/sheet" };
+      let callFailed = false;
+      let failMsg = "";
+      try {
+        await fetchIQWealth(brokenConfig);
+        failMsg = "unreachable endpoint unexpectedly returned data";
+      } catch (err) {
+        callFailed = true;
+        failMsg = String((_g = err == null ? void 0 : err.message) != null ? _g : err);
+      }
+      const { data: fallbackRow, error: fbErr } = await sb.from("rates").select("*").eq("region", "baghdad").single();
+      check(
+        "fallback_mechanism",
+        callFailed && !fbErr && !!fallbackRow && fallbackRow.buy_price > 0 && fallbackRow.sell_price > 0,
+        callFailed && !fbErr && fallbackRow ? `API failure detected ("${failMsg.slice(0, 80)}") \u2014 DB fallback serves sell=${fallbackRow.sell_price} buy=${fallbackRow.buy_price}` : `callFailed=${callFailed} dbErr=${(_h = fbErr == null ? void 0 : fbErr["message"]) != null ? _h : "none"}`
+      );
+    } catch (e) {
+      check("fallback_mechanism", false, "fallback test threw: " + ((_i = e == null ? void 0 : e.message) != null ? _i : String(e)));
+    }
+  }
+  const allPassed = checks.every((c) => c.passed);
+  setResponseStatus(event, allPassed ? 200 : 500);
+  return {
+    ok: allPassed,
+    total: checks.length,
+    passed: checks.filter((c) => c.passed).length,
+    source: "iqwealth-usd-sync",
+    checks
+  };
+});
+
+const testSync$1 = /*#__PURE__*/Object.freeze(/*#__PURE__*/Object.defineProperty({
+  __proto__: null,
+  default: testSync
 }, Symbol.toStringTag, { value: 'Module' }));
 
 function renderPayloadResponse(ssrContext) {
